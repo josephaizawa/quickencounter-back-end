@@ -15,6 +15,18 @@ const readMonsters = async (req, res) => {
   }
 };
 
+const readFilteredMonsters = async (cr) => {
+  try {
+    const response = await axios.get(
+      `https://api.open5e.com/monsters?document__slug=wotc-srd&cr=${cr}`
+    );
+    console.log(response.data);
+    return response.data;
+  } catch (e) {
+    console.error("error getting monster data:", e);
+  }
+};
+
 // const readIndividualMonster = async (req, res, name) => {
 //   console.log(name);
 //   try {
@@ -26,4 +38,4 @@ const readMonsters = async (req, res) => {
 //   }
 // };
 
-export { readMonsters };
+export { readMonsters, readFilteredMonsters };
