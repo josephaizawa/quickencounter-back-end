@@ -3,6 +3,32 @@ import configuration from "../knexfile.js";
 const knex = initKnex(configuration);
 import axios from "axios";
 
+const readMonsterStats = async (_req, res) => {
+  try {
+    const data = await knex
+      .from("monsterstatsbycr1")
+      .select(
+        "cr",
+        "proficiency_bonus",
+        "ac",
+        "min_hp",
+        "max_hp",
+        "average_hp",
+        "attack_bonus",
+        "min_dpr",
+        "max_dpr",
+        "average_dpr",
+        "save_dc",
+        "hp_increase",
+        "hp_decrease",
+        "idx"
+      );
+    return data;
+  } catch (error) {
+    console.log("Error reading from file ", error);
+  }
+};
+
 const readMonsters = async (req, res) => {
   try {
     const response = await axios.get(
@@ -38,4 +64,4 @@ const readFilteredMonsters = async (cr) => {
 //   }
 // };
 
-export { readMonsters, readFilteredMonsters };
+export { readMonsters, readFilteredMonsters, readMonsterStats };
