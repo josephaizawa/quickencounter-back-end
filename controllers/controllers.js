@@ -4,6 +4,8 @@ import {
   readMonsters,
   readFilteredMonsters,
   readMonsterStats,
+  readIndividualMonster,
+  readIndividualMonsterImage,
 } from "../utils/helpers.js";
 const knex = initKnex(configuration);
 
@@ -74,26 +76,72 @@ const fetchMonsters = async (_req, res) => {
   }
 };
 
-// const fetchIndividualMonster = async (req, res) => {
-//   const passedName = req.params;
-//   try {
-//     const response = await axios.get(
-//       `www.dnd5eapi.co/api/monsters/${req.name}`
-//     );
-//     console.log(response.data);
-//     return response.data;
-//   } catch (e) {
-//     console.error("error getting monster data:", e);
-//   }
+const fetchIndividualMonster = async (req, res) => {
+  const { name } = req.body.name;
 
-//   res.status(200).json(selectedMonster);
+  const responses = await Promise.all([
+    readIndividualMonster(name),
+    readIndividualMonsterImage(name),
+  ]);
+
+  const monsterDetails = await responses[0];
+  const monsterImage = await responses[1];
+
+  const updatedMonsterDetails = {
+    ...monsterDetails,
+    image: { monsterImage },
+  };
+
+  try {
+    res.status(200).json(updatedMonsterDetails);
+  } catch (err) {
+    res.status(400).send(`Error retrieving monsters: ${err}`);
+  }
+};
+
+// const fetchIndividualMonster = async (req, res) => {
+//   const { name } = req.body;
+//   const individualMonster = await readIndividualMonster(name);
+//   try {
+//     res.status(200).json(individualMonster);
+//   } catch (err) {
+//     res.status(400).send(`Error retrieving monsters: ${err}`);
+//   }
 // };
+
+const fetchIndividualMonsterImage = async (req, res) => {
+  const { name } = req.body;
+  const individualMonsterImage = await readIndividualMonsterImage(name);
+  try {
+    res.status(200).json(individualMonsterImage);
+  } catch (err) {
+    res.status(400).send(`Error retrieving monsters: ${err}`);
+  }
+};
 
 const fetchCRFilteredMonsters = async (req, res) => {
   const { cr } = req.body;
   const filteredMonsterList = await readFilteredMonsters(cr);
+  // const monsterList = Array.isArray(filteredMonsterList)
+  //   ? filteredMonsterList
+  //   : [filteredMonsterList];
+  // console.log(monsterList);
+  const requests = filteredMonsterList.map(async (monster) => {
+    const monsterName = { name: monster.name };
+    const response = await readIndividualMonsterImage(monsterName);
+
+    const updatedMonsterDetails = {
+      ...monster,
+      image: { response },
+    };
+    console.log(response);
+    return updatedMonsterDetails;
+  });
+  const detailedMonsters = await Promise.all(requests);
+  console.log(detailedMonsters);
+
   try {
-    res.status(200).json(filteredMonsterList);
+    res.status(200).json(detailedMonsters);
   } catch (err) {
     res.status(400).send(`Error retrieving monsters: ${err}`);
   }
@@ -104,4 +152,6 @@ export {
   fetchCRFilteredMonsters,
   fetchMonsterStats,
   fetchIndividualCRStats,
+  fetchIndividualMonster,
+  fetchIndividualMonsterImage,
 };

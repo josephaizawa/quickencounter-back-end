@@ -6,6 +6,8 @@ import {
   fetchCRFilteredMonsters,
   fetchMonsterStats,
   fetchIndividualCRStats,
+  fetchIndividualMonster,
+  fetchIndividualMonsterImage,
 } from "../controllers/controllers.js";
 const knex = initKnex(configuration);
 const router = express.Router();
@@ -13,7 +15,8 @@ const router = express.Router();
 router.get("/", fetchMonsters);
 router.get("/stats", fetchMonsterStats);
 router.post("/statsfiltered", fetchIndividualCRStats);
-// router.get("/:passedName", fetchIndividualMonster);
+router.post("/individual", fetchIndividualMonster);
+router.post("/image", fetchIndividualMonsterImage);
 router.post("/filtered", fetchCRFilteredMonsters);
 
 export default router;
