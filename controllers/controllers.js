@@ -46,26 +46,6 @@ const fetchIndividualCRStats = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-// const fetchIndividualCRStats = async (req, res) => {
-//   const { cr } = req.body;
-
-//   if (!cr) {
-//     return res
-//       .status(400)
-//       .json({ message: "CR value missing in request body" });
-//   }
-//   const monsterStatsList = await readMonsterStats();
-//   const selectedMonsterCR = monsterStatsList.find((monster) => {
-//     console.log(monster.cr, cr);
-//     return monster.cr == cr;
-//   });
-
-//   if (!selectedMonsterCR) {
-//     return res.status(404).json({ message: "monster with this cr not found" });
-//   }
-
-//   res.status(200).json(selectedMonsterCR);
-// };
 
 const fetchMonsters = async (_req, res) => {
   const monsterList = await readMonsters();
@@ -77,7 +57,7 @@ const fetchMonsters = async (_req, res) => {
 };
 
 const fetchIndividualMonster = async (req, res) => {
-  const { name } = req.body.name;
+  const name = req.body.name;
 
   const responses = await Promise.all([
     readIndividualMonster(name),
@@ -99,16 +79,6 @@ const fetchIndividualMonster = async (req, res) => {
   }
 };
 
-// const fetchIndividualMonster = async (req, res) => {
-//   const { name } = req.body;
-//   const individualMonster = await readIndividualMonster(name);
-//   try {
-//     res.status(200).json(individualMonster);
-//   } catch (err) {
-//     res.status(400).send(`Error retrieving monsters: ${err}`);
-//   }
-// };
-
 const fetchIndividualMonsterImage = async (req, res) => {
   const { name } = req.body;
   const individualMonsterImage = await readIndividualMonsterImage(name);
@@ -122,14 +92,11 @@ const fetchIndividualMonsterImage = async (req, res) => {
 const fetchCRFilteredMonsters = async (req, res) => {
   const { cr } = req.body;
   const filteredMonsterList = await readFilteredMonsters(cr);
-  // const monsterList = Array.isArray(filteredMonsterList)
-  //   ? filteredMonsterList
-  //   : [filteredMonsterList];
 
   const requests = filteredMonsterList.map(async (monster) => {
     const monsterName = { name: monster.name };
     const monsterImage = await readIndividualMonsterImage(monster.name);
-    // console.log(monster.name);
+
     const updatedMonsterDetails = {
       ...monster,
       image: { monsterImage },
@@ -138,7 +105,6 @@ const fetchCRFilteredMonsters = async (req, res) => {
     return updatedMonsterDetails;
   });
   const detailedMonsters = await Promise.all(requests);
-  console.log(detailedMonsters);
 
   try {
     res.status(200).json(detailedMonsters);
