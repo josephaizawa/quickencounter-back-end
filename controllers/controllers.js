@@ -94,7 +94,7 @@ const fetchCRFilteredMonsters = async (req, res) => {
   const filteredMonsterList = await readFilteredMonsters(cr);
 
   const requests = filteredMonsterList.map(async (monster) => {
-    const monsterName = { name: monster.name };
+    // const monsterName = { name: monster.name };
     const imageUrl = await readIndividualMonsterImage(monster.name);
 
     const updatedMonsterDetails = {
