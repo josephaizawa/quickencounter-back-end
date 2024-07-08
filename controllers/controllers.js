@@ -95,11 +95,11 @@ const fetchCRFilteredMonsters = async (req, res) => {
 
   const requests = filteredMonsterList.map(async (monster) => {
     const monsterName = { name: monster.name };
-    const monsterImage = await readIndividualMonsterImage(monster.name);
+    const imageUrl = await readIndividualMonsterImage(monster.name);
 
     const updatedMonsterDetails = {
       ...monster,
-      image: { monsterImage },
+      image: { imageUrl },
     };
 
     return updatedMonsterDetails;
