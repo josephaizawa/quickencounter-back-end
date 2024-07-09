@@ -91,15 +91,16 @@ const fetchIndividualMonsterImage = async (req, res) => {
 
 const fetchCRFilteredMonsters = async (req, res) => {
   const { cr } = req.body;
+  console.log(req.body);
   const filteredMonsterList = await readFilteredMonsters(cr);
 
   const requests = filteredMonsterList.map(async (monster) => {
     // const monsterName = { name: monster.name };
-    const imageUrl = await readIndividualMonsterImage(monster.name);
+    const monsterImage = await readIndividualMonsterImage(monster.name);
 
     const updatedMonsterDetails = {
       ...monster,
-      image: { imageUrl },
+      image: { monsterImage },
     };
 
     return updatedMonsterDetails;

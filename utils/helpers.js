@@ -71,14 +71,13 @@ const readIndividualMonsterImage = async (name) => {
     const response = await axios.get(
       `https://api.magicthegathering.io/v1/cards?name=${name.toLowerCase()}`
     );
-    if (response.data.cards.length === 0) {
-      return { error: "Card not found" };
-    }
-    return response.data.cards;
+    // if (response.data.cards.length === 0) {
+    //   return { error: "Card not found" };
+    // }
+    // return response.data.cards;
 
-    console.log(response.data.cards[0].imageUrl);
-    // let monsterImage = response.data.cards[0].imageUrl;
-    // return monsterImage;
+    let monsterImage = response.data.cards[0].imageUrl;
+    return monsterImage;
   } catch (e) {
     console.error("error getting monster data:", e);
   }

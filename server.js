@@ -10,7 +10,7 @@ dotenv.config();
 
 const port = process.env.PORT || 8080;
 
-app.use(cors({ origin: process.env.FRONT_END }));
+app.use(cors(/*{ origin: process.env.FRONT_END }*/));
 
 app.use("/monsters", monsters);
 
