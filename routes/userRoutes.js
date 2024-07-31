@@ -2,12 +2,15 @@ import express from "express";
 import bcrypt from "bcrypt";
 import initKnex from "knex";
 import configuration from "../knexfile.js";
-
 import jwt from "jsonwebtoken";
+import { fetchIndividualUser, fetchUsers } from "../controllers/controllers.js";
 
 const knex = initKnex(configuration);
 
 const router = express.Router();
+
+router.get("/", fetchUsers);
+router.post("/individual", fetchIndividualUser);
 
 // register
 router.post("/signup", async (req, res) => {
@@ -35,7 +38,6 @@ router.post("/signup", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
   if (!email || !password) {
     return res.status(400).send("Please enter the required fields");
   }

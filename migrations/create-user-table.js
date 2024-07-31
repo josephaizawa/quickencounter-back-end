@@ -11,7 +11,7 @@ const up = function (knex) {
     table.string("password").notNullable();
     table.string("phone");
     table.string("address");
-    table.string("role");
+    table.string("role").defaultTo("DM");
   });
 };
 const down = function (knex) {

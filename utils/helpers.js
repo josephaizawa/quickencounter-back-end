@@ -83,10 +83,32 @@ const readIndividualMonsterImage = async (name) => {
   }
 };
 
+const readUsers = async (req, res) => {
+  try {
+    const usersList = await knex
+      .from("users")
+      .select(
+        "users.id",
+        "users.first_name",
+        "users.last_name",
+        "users.email",
+        "users.phone",
+        "users.address",
+        "users.role"
+      );
+
+    return usersList;
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user data" });
+    console.error(error);
+  }
+};
+
 export {
   readMonsters,
   readFilteredMonsters,
   readMonsterStats,
   readIndividualMonster,
   readIndividualMonsterImage,
+  readUsers,
 };

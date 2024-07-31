@@ -6,6 +6,7 @@ import {
   readMonsterStats,
   readIndividualMonster,
   readIndividualMonsterImage,
+  readUsers,
 } from "../utils/helpers.js";
 const knex = initKnex(configuration);
 
@@ -91,7 +92,6 @@ const fetchIndividualMonsterImage = async (req, res) => {
 
 const fetchCRFilteredMonsters = async (req, res) => {
   const { cr } = req.body;
-  console.log(req.body);
   const filteredMonsterList = await readFilteredMonsters(cr);
 
   const requests = filteredMonsterList.map(async (monster) => {
@@ -114,6 +114,29 @@ const fetchCRFilteredMonsters = async (req, res) => {
   }
 };
 
+const fetchUsers = async (_req, res) => {
+  const userList = await readUsers();
+  try {
+    res.status(200).json(userList);
+  } catch (err) {
+    res.status(400).send(`Error retrieving users: ${err}`);
+  }
+};
+
+const fetchIndividualUser = async (req, res) => {
+  const userList = await readUsers();
+  console.log(userList);
+  const selectedUser = userList.find((user) => {
+    return user.id == req.body.id;
+  });
+
+  if (!selectedUser) {
+    return res.status(404).json({ message: "User with this ID not found" });
+  }
+
+  res.status(200).json(selectedUser);
+};
+
 export {
   fetchMonsters,
   fetchCRFilteredMonsters,
@@ -121,4 +144,6 @@ export {
   fetchIndividualCRStats,
   fetchIndividualMonster,
   fetchIndividualMonsterImage,
+  fetchUsers,
+  fetchIndividualUser,
 };
