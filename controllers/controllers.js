@@ -137,6 +137,32 @@ const fetchIndividualUser = async (req, res) => {
   res.status(200).json(selectedUser);
 };
 
+const editUser = async (req, res) => {
+  console.log(req.body);
+  const userIdCheck = await knex("users")
+    .where({
+      id: req.body.id,
+    })
+    .first();
+
+  const userList = await readUsers();
+  const selectedUser = userList.find((user) => {
+    return user.id == req.body.id;
+  });
+  if (!userIdCheck) {
+    return res.status(404).json({ message: "User with this ID not found" });
+  } else if (!req.body.email) {
+    res.status(400).json({
+      message: "Email is required. Please enter email",
+    });
+  } else {
+    const data = await knex("users")
+      .where("users.id", "=", req.body.id)
+      .update(req.body);
+    res.status(200).json(data);
+  }
+};
+
 export {
   fetchMonsters,
   fetchCRFilteredMonsters,
@@ -146,4 +172,5 @@ export {
   fetchIndividualMonsterImage,
   fetchUsers,
   fetchIndividualUser,
+  editUser,
 };

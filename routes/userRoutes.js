@@ -3,7 +3,11 @@ import bcrypt from "bcrypt";
 import initKnex from "knex";
 import configuration from "../knexfile.js";
 import jwt from "jsonwebtoken";
-import { fetchIndividualUser, fetchUsers } from "../controllers/controllers.js";
+import {
+  editUser,
+  fetchIndividualUser,
+  fetchUsers,
+} from "../controllers/controllers.js";
 
 const knex = initKnex(configuration);
 
@@ -11,6 +15,7 @@ const router = express.Router();
 
 router.get("/", fetchUsers);
 router.post("/individual", fetchIndividualUser);
+router.put("/edituser", editUser);
 
 // register
 router.post("/signup", async (req, res) => {
