@@ -104,6 +104,36 @@ const readUsers = async (req, res) => {
   }
 };
 
+const readParty = async (req, res) => {
+  try {
+    const partyList = await knex
+      .from("party")
+      .select("party.id", "party.name", "party.level");
+
+    return partyList;
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch party data" });
+    console.error(error);
+  }
+};
+
+const readPartyMembers = async (req, res) => {
+  try {
+    const partyMembersList = await knex
+      .from("party_members")
+      .select(
+        "party_members.party_id",
+        "party_members.name",
+        "party_members.level"
+      );
+
+    return partyMembersList;
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch party member data" });
+    console.error(error);
+  }
+};
+
 export {
   readMonsters,
   readFilteredMonsters,
@@ -111,4 +141,6 @@ export {
   readIndividualMonster,
   readIndividualMonsterImage,
   readUsers,
+  readParty,
+  readPartyMembers,
 };

@@ -1,8 +1,4 @@
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
-const up = function (knex) {
+export const up = function (knex) {
   return knex.schema.createTable("users", (table) => {
     table.increments("id").primary();
     table.string("first_name");
@@ -14,8 +10,7 @@ const up = function (knex) {
     table.string("role").defaultTo("DM");
   });
 };
-const down = function (knex) {
+
+export const down = function (knex) {
   return knex.schema.dropTable("users");
 };
-
-export { up, down };

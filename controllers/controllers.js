@@ -7,6 +7,8 @@ import {
   readIndividualMonster,
   readIndividualMonsterImage,
   readUsers,
+  readParty,
+  readPartyMembers,
 } from "../utils/helpers.js";
 const knex = initKnex(configuration);
 
@@ -163,6 +165,77 @@ const editUser = async (req, res) => {
   }
 };
 
+const fetchParties = async (_req, res) => {
+  const partyList = await readParty();
+  try {
+    res.status(200).json(partyList);
+  } catch (err) {
+    res.status(400).send(`Error retrieving party: ${err}`);
+  }
+};
+
+const fetchIndividualParty = async (req, res) => {
+  const partyList = await readParty();
+  const selectedParty = partyList.find((party) => {
+    console.log(party.id);
+    console.log(req.body);
+    return party.id == req.body.id;
+  });
+
+  if (!selectedParty) {
+    return res.status(404).json({ message: "Party with this ID not found" });
+  }
+
+  res.status(200).json(selectedParty);
+};
+
+const fetchAllPartyMembers = async (_req, res) => {
+  const partyMemberList = await readPartyMembers();
+  try {
+    res.status(200).json(partyMemberList);
+  } catch (err) {
+    res.status(400).send(`Error retrieving party members: ${err}`);
+  }
+};
+
+const fetchPartyMembers = async (req, res) => {
+  try {
+    const partyMemberList = await readPartyMembers();
+    const newPartyMemberList = partyMemberList.filter(
+      (partyMember) => partyMember.party_id == req.body.id
+    );
+
+    if (newPartyMemberList.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No Party Members with this Party ID not found" });
+    }
+
+    res.status(200).json(newPartyMemberList);
+  } catch (error) {
+    console.error("Error fetching party members:", error);
+    res.status(500).json({ message: "Error fetching party members" });
+  }
+};
+
+// const fetchPartyMembers = async (req, res) => {
+//   try {
+//     const partyMemberList = await readPartyMembers();
+//     const selectedPartyMembers = partyMemberList.filter(
+//       (party) => party.id == req.body.id
+//     );
+
+//     if (selectedPartyMembers.length === 0) {
+//       return res.status(404).json({ message: "Party with this ID not found" });
+//     }
+
+//     res.status(200).json(selectedPartyMembers);
+//   } catch (error) {
+//     console.error("Error fetching party members:", error);
+//     res.status(500).json({ message: "Error fetching party members" });
+//   }
+// };
+
 export {
   fetchMonsters,
   fetchCRFilteredMonsters,
@@ -173,4 +246,8 @@ export {
   fetchUsers,
   fetchIndividualUser,
   editUser,
+  fetchParties,
+  fetchAllPartyMembers,
+  fetchIndividualParty,
+  fetchPartyMembers,
 };

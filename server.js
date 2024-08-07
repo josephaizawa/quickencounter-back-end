@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import knex from "knex";
 import monsters from "./routes/monsters.js";
 import userRoutes from "./routes/userRoutes.js";
+import party from "./routes/party.js";
 const app = express();
 app.use(express.json());
 dotenv.config();
@@ -14,6 +15,7 @@ app.use(cors(/*{ origin: process.env.FRONT_END }*/));
 
 app.use("/monsters", monsters);
 app.use("/users", userRoutes);
+app.use("/party", party);
 
 app.listen(port, () => {
   console.log(`App is running on port: ${port}`);
