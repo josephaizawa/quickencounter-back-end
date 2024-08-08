@@ -218,21 +218,141 @@ const fetchPartyMembers = async (req, res) => {
   }
 };
 
-// const fetchPartyMembers = async (req, res) => {
-//   try {
-//     const partyMemberList = await readPartyMembers();
-//     const selectedPartyMembers = partyMemberList.filter(
-//       (party) => party.id == req.body.id
-//     );
+const addOrUpdateParty = async (req, res) => {
+  console.log(req.body);
 
-//     if (selectedPartyMembers.length === 0) {
-//       return res.status(404).json({ message: "Party with this ID not found" });
+  try {
+    const [newPartyInfo, ...partyMembers] = req.body;
+
+    // Validate the input for the new party
+    if (!newPartyInfo.id || !newPartyInfo.name || !newPartyInfo.level) {
+      return res
+        .status(400)
+        .json({ message: "Missing input values for the new party" });
+    }
+
+    // Validate each party member's information
+    for (const member of partyMembers) {
+      if (!member.name || !member.level) {
+        return res.status(400).json({
+          message: "Missing input values for one or more party members",
+        });
+      }
+    }
+
+    // Check if the party already exists by ID
+    const existingParty = await knex("party")
+      .where({ id: newPartyInfo.id }) // Check for existing party by ID
+      .first();
+
+    let partyId;
+
+    if (existingParty) {
+      // Update the existing party information
+      await knex("party").where({ id: existingParty.id }).update({
+        name: newPartyInfo.name,
+        level: newPartyInfo.level,
+        // Add other fields from newPartyInfo that need to be updated
+      });
+
+      partyId = existingParty.id;
+
+      // Optionally, remove existing party members before inserting new ones
+      await knex("party_members").where({ party_id: partyId }).del();
+    } else {
+      // Insert the new party information
+      const [newPartyId] = await knex("party").insert(newPartyInfo);
+      partyId = newPartyId;
+    }
+
+    // Add the party ID to each party member
+    const updatedPartyMembers = partyMembers.map((member) => ({
+      ...member,
+      party_id: partyId,
+    }));
+
+    // Insert party members into the 'party_members' table
+    await knex("party_members").insert(updatedPartyMembers);
+
+    // Return the party information
+    res.status(200).json({ partyId, newPartyInfo, updatedPartyMembers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message:
+        "An error occurred while adding or updating the party and its members.",
+    });
+  }
+};
+
+// const addNewParty = async (req, res) => {
+//   console.log(req.body);
+
+//   try {
+//     const [newPartyInfo, ...partyMembers] = req.body;
+
+//     // Validate the input for the new party
+//     if (!newPartyInfo.name || !newPartyInfo.level) {
+//       return res
+//         .status(400)
+//         .json({ message: "Missing input values for the new party" });
 //     }
 
-//     res.status(200).json(selectedPartyMembers);
+//     // Validate each party member's information
+//     for (const member of partyMembers) {
+//       if (!member.name || !member.level) {
+//         return res.status(400).json({
+//           message: "Missing input values for one or more party members",
+//         });
+//       }
+//     }
+
+//     // Insert the new party information into the 'party' table
+//     const [newPartyId] = await knex("party").insert(newPartyInfo);
+
+//     // Get the last inserted ID
+//     const partyId = await knex("party")
+//       .select("id")
+//       .where(newPartyInfo)
+//       .first();
+
+//     if (!partyId) {
+//       return res
+//         .status(500)
+//         .json({ message: "Failed to retrieve the party ID" });
+//     }
+
+//     // Add the new party ID to each party member
+//     const updatedPartyMembers = partyMembers.map((member) => ({
+//       ...member,
+//       party_id: partyId.id,
+//     }));
+
+//     // Insert the party members into the 'party_members' table
+//     await knex("party_members").insert(updatedPartyMembers);
+
+//     // Return the new party information
+//     res
+//       .status(201)
+//       .json({ newPartyId: partyId.id, newPartyInfo, updatedPartyMembers });
 //   } catch (error) {
-//     console.error("Error fetching party members:", error);
-//     res.status(500).json({ message: "Error fetching party members" });
+//     console.error(error);
+//     res.status(500).json({
+//       message: "An error occurred while adding the party and its members.",
+//     });
+//   }
+// };
+
+// const addNewPartyMembers = async (req, res) => {
+//   try {
+//     if (!req.body.party_id || !req.body.name || !req.body.level) {
+//       res.status(400).json({ message: "missing input values" });
+//     } else {
+//       const newParty = await knex("party").insert(req.body);
+//       res.status(201).json(newParty);
+//     }
+//   } catch (error) {
+//     console.log(error);
 //   }
 // };
 
@@ -250,4 +370,5 @@ export {
   fetchAllPartyMembers,
   fetchIndividualParty,
   fetchPartyMembers,
+  addOrUpdateParty,
 };

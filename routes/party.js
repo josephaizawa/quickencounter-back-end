@@ -8,6 +8,7 @@ import {
   fetchAllPartyMembers,
   fetchIndividualParty,
   fetchPartyMembers,
+  addOrUpdateParty,
 } from "../controllers/controllers.js";
 
 const knex = initKnex(configuration);
@@ -18,5 +19,6 @@ router.get("/", fetchParties);
 router.get("/allmembers", fetchAllPartyMembers);
 router.post("/individual", fetchIndividualParty);
 router.post("/members", fetchPartyMembers);
+router.post("/addparty", addOrUpdateParty);
 
 export default router;
