@@ -127,7 +127,7 @@ const fetchUsers = async (_req, res) => {
 
 const fetchIndividualUser = async (req, res) => {
   const userList = await readUsers();
-  console.log(userList);
+
   const selectedUser = userList.find((user) => {
     return user.id == req.body.id;
   });
@@ -140,7 +140,6 @@ const fetchIndividualUser = async (req, res) => {
 };
 
 const editUser = async (req, res) => {
-  console.log(req.body);
   const userIdCheck = await knex("users")
     .where({
       id: req.body.id,
@@ -177,8 +176,6 @@ const fetchParties = async (_req, res) => {
 const fetchIndividualParty = async (req, res) => {
   const partyList = await readParty();
   const selectedParty = partyList.find((party) => {
-    console.log(party.id);
-    console.log(req.body);
     return party.id == req.body.id;
   });
 
@@ -201,6 +198,7 @@ const fetchAllPartyMembers = async (_req, res) => {
 const fetchPartyMembers = async (req, res) => {
   try {
     const partyMemberList = await readPartyMembers();
+
     const newPartyMemberList = partyMemberList.filter(
       (partyMember) => partyMember.party_id == req.body.id
     );
@@ -219,13 +217,18 @@ const fetchPartyMembers = async (req, res) => {
 };
 
 const addOrUpdateParty = async (req, res) => {
-  console.log(req.body);
-
   try {
-    const [newPartyInfo, ...partyMembers] = req.body;
+    const {
+      user_id: user_id,
+      id: party_id,
+      name: partyName,
+      level: partylevel,
+      members: partyMembers,
+    } = req.body;
+    console.log(req.body);
 
     // Validate the input for the new party
-    if (!newPartyInfo.id || !newPartyInfo.name || !newPartyInfo.level) {
+    if (!user_id || !partyName || !partylevel) {
       return res
         .status(400)
         .json({ message: "Missing input values for the new party" });
@@ -240,29 +243,28 @@ const addOrUpdateParty = async (req, res) => {
       }
     }
 
-    // Check if the party already exists by ID
-    const existingParty = await knex("party")
-      .where({ id: newPartyInfo.id }) // Check for existing party by ID
-      .first();
+    // Check if the party already exists by user ID
+    const existingParty = await knex("party").where({ user_id }).first();
 
     let partyId;
 
+    const newPartyInfo = {
+      user_id,
+      name: partyName,
+      level: partylevel,
+    };
+
     if (existingParty) {
       // Update the existing party information
-      await knex("party").where({ id: existingParty.id }).update({
-        name: newPartyInfo.name,
-        level: newPartyInfo.level,
-        // Add other fields from newPartyInfo that need to be updated
-      });
-
+      await knex("party").where({ id: existingParty.id }).update(newPartyInfo);
       partyId = existingParty.id;
 
       // Optionally, remove existing party members before inserting new ones
       await knex("party_members").where({ party_id: partyId }).del();
     } else {
       // Insert the new party information
-      const [newPartyId] = await knex("party").insert(newPartyInfo);
-      partyId = newPartyId;
+      const result = await knex("party").insert(newPartyInfo);
+      partyId = result[0]; // Retrieve the inserted ID (index 0 for single insert)
     }
 
     // Add the party ID to each party member
@@ -284,77 +286,6 @@ const addOrUpdateParty = async (req, res) => {
     });
   }
 };
-
-// const addNewParty = async (req, res) => {
-//   console.log(req.body);
-
-//   try {
-//     const [newPartyInfo, ...partyMembers] = req.body;
-
-//     // Validate the input for the new party
-//     if (!newPartyInfo.name || !newPartyInfo.level) {
-//       return res
-//         .status(400)
-//         .json({ message: "Missing input values for the new party" });
-//     }
-
-//     // Validate each party member's information
-//     for (const member of partyMembers) {
-//       if (!member.name || !member.level) {
-//         return res.status(400).json({
-//           message: "Missing input values for one or more party members",
-//         });
-//       }
-//     }
-
-//     // Insert the new party information into the 'party' table
-//     const [newPartyId] = await knex("party").insert(newPartyInfo);
-
-//     // Get the last inserted ID
-//     const partyId = await knex("party")
-//       .select("id")
-//       .where(newPartyInfo)
-//       .first();
-
-//     if (!partyId) {
-//       return res
-//         .status(500)
-//         .json({ message: "Failed to retrieve the party ID" });
-//     }
-
-//     // Add the new party ID to each party member
-//     const updatedPartyMembers = partyMembers.map((member) => ({
-//       ...member,
-//       party_id: partyId.id,
-//     }));
-
-//     // Insert the party members into the 'party_members' table
-//     await knex("party_members").insert(updatedPartyMembers);
-
-//     // Return the new party information
-//     res
-//       .status(201)
-//       .json({ newPartyId: partyId.id, newPartyInfo, updatedPartyMembers });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       message: "An error occurred while adding the party and its members.",
-//     });
-//   }
-// };
-
-// const addNewPartyMembers = async (req, res) => {
-//   try {
-//     if (!req.body.party_id || !req.body.name || !req.body.level) {
-//       res.status(400).json({ message: "missing input values" });
-//     } else {
-//       const newParty = await knex("party").insert(req.body);
-//       res.status(201).json(newParty);
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
 
 export {
   fetchMonsters,
