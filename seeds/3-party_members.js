@@ -1,9 +1,4 @@
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 export async function seed(knex) {
-  // Deletes ALL existing entries
   await knex("party_members").del();
   await knex("party_members").insert([
     {

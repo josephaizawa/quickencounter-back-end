@@ -25,7 +25,7 @@ const readMonsterStats = async (_req, res) => {
       );
     return data;
   } catch (error) {
-    console.log("Error reading from file ", error);
+    console.error("Error reading from file ", error);
   }
 };
 
@@ -71,10 +71,6 @@ const readIndividualMonsterImage = async (name) => {
     const response = await axios.get(
       `https://api.magicthegathering.io/v1/cards?name=${name.toLowerCase()}`
     );
-    // if (response.data.cards.length === 0) {
-    //   return { error: "Card not found" };
-    // }
-    // return response.data.cards;
 
     let monsterImage = response.data.cards[0].imageUrl;
     return monsterImage;
@@ -134,6 +130,19 @@ const readPartyMembers = async (req, res) => {
   }
 };
 
+const readMonsterSave = async (req, res) => {
+  try {
+    const monsterSaveList = await knex
+      .from("monster_save")
+      .select("monster_save.party_id", "monster_save.name", "monster_save.cr");
+
+    return monsterSaveList;
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch monster save data" });
+    console.error(error);
+  }
+};
+
 export {
   readMonsters,
   readFilteredMonsters,
@@ -143,4 +152,5 @@ export {
   readUsers,
   readParty,
   readPartyMembers,
+  readMonsterSave,
 };

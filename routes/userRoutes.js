@@ -63,7 +63,7 @@ router.post("/login", async (req, res) => {
         expiresIn: "24h",
       }
     );
-    // Respond with the token
+
     res.status(200).json({ token: token, userId: user.id });
   } catch (error) {
     console.log(error);
@@ -73,12 +73,10 @@ router.post("/login", async (req, res) => {
 
 // profile
 router.get("/profile", async (req, res) => {
-  // Check for authorization header
   if (!req.headers.authorization) {
     return res.status(401).send({ error: "Please login" });
   }
 
-  // Extract token from the authorization header
   const authToken = req.headers.authorization.split(" ")[1];
 
   if (!authToken || !process.env.JWT_SECRET) {
@@ -88,13 +86,11 @@ router.get("/profile", async (req, res) => {
   try {
     const verified = jwt.verify(authToken, process.env.JWT_SECRET);
     if (verified) {
-      const { id } = verified; // Destructure for clarity
+      const { id } = verified;
 
-      // Fetch user
       const user = await knex("users").where({ id }).first();
 
       if (!user) {
-        // Check if user exists
         return res.status(404).json({ error: "User not found" });
       }
 

@@ -9,6 +9,7 @@ import {
   readUsers,
   readParty,
   readPartyMembers,
+  readMonsterSave,
 } from "../utils/helpers.js";
 const knex = initKnex(configuration);
 
@@ -97,7 +98,6 @@ const fetchCRFilteredMonsters = async (req, res) => {
   const filteredMonsterList = await readFilteredMonsters(cr);
 
   const requests = filteredMonsterList.map(async (monster) => {
-    // const monsterName = { name: monster.name };
     const monsterImage = await readIndividualMonsterImage(monster.name);
 
     const updatedMonsterDetails = {
@@ -225,16 +225,13 @@ const addOrUpdateParty = async (req, res) => {
       level: partylevel,
       members: partyMembers,
     } = req.body;
-    console.log(req.body);
 
-    // Validate the input for the new party
     if (!user_id || !partyName || !partylevel) {
       return res
         .status(400)
         .json({ message: "Missing input values for the new party" });
     }
 
-    // Validate each party member's information
     for (const member of partyMembers) {
       if (!member.name || !member.level) {
         return res.status(400).json({
@@ -243,7 +240,6 @@ const addOrUpdateParty = async (req, res) => {
       }
     }
 
-    // Check if the party already exists by user ID
     const existingParty = await knex("party").where({ user_id }).first();
 
     let partyId;
@@ -255,28 +251,22 @@ const addOrUpdateParty = async (req, res) => {
     };
 
     if (existingParty) {
-      // Update the existing party information
       await knex("party").where({ id: existingParty.id }).update(newPartyInfo);
       partyId = existingParty.id;
 
-      // Optionally, remove existing party members before inserting new ones
       await knex("party_members").where({ party_id: partyId }).del();
     } else {
-      // Insert the new party information
       const result = await knex("party").insert(newPartyInfo);
-      partyId = result[0]; // Retrieve the inserted ID (index 0 for single insert)
+      partyId = result[0];
     }
 
-    // Add the party ID to each party member
     const updatedPartyMembers = partyMembers.map((member) => ({
       ...member,
       party_id: partyId,
     }));
 
-    // Insert party members into the 'party_members' table
     await knex("party_members").insert(updatedPartyMembers);
 
-    // Return the party information
     res.status(200).json({ partyId, newPartyInfo, updatedPartyMembers });
   } catch (error) {
     console.error(error);
@@ -284,6 +274,64 @@ const addOrUpdateParty = async (req, res) => {
       message:
         "An error occurred while adding or updating the party and its members.",
     });
+  }
+};
+
+const saveMonsters = async (req, res) => {
+  try {
+    const { party_id, monsters } = req.body;
+
+    if (!party_id || !Array.isArray(monsters) || monsters.length === 0) {
+      return res.status(400).json({ message: "Missing party ID or monsters" });
+    }
+
+    for (const monster of monsters) {
+      if (!monster.name || !monster.cr) {
+        return res.status(400).json({
+          message: "Missing input values for one or more monsters",
+        });
+      }
+    }
+
+    await knex("monster_save").where({ party_id }).del();
+
+    const newMonsters = monsters.map((monster) => ({
+      party_id,
+      name: monster.name,
+      cr: monster.cr,
+      image: JSON.stringify(monster.image),
+      environments: JSON.stringify(monster.environments),
+    }));
+
+    await knex("monster_save").insert(newMonsters);
+
+    res.status(200).json({ message: "Monsters saved successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred while saving monsters.",
+    });
+  }
+};
+
+const fetchSavedMonsters = async (req, res) => {
+  try {
+    const monsterSaveList = await readMonsterSave();
+
+    const newMonsterSaveList = monsterSaveList.filter(
+      (monster) => monster.party_id == req.body.id
+    );
+
+    if (newMonsterSaveList.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No saved monsters with this Party ID not found" });
+    }
+
+    res.status(200).json(newMonsterSaveList);
+  } catch (error) {
+    console.error("Error fetching saved monsters:", error);
+    res.status(500).json({ message: "Error fetching saved monsters" });
   }
 };
 
@@ -302,4 +350,6 @@ export {
   fetchIndividualParty,
   fetchPartyMembers,
   addOrUpdateParty,
+  saveMonsters,
+  fetchSavedMonsters,
 };
