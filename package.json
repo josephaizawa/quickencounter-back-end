@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "@apollo/server": "^4.10.4",
+    "@google/generative-ai": "^0.17.0",
     "apollo-datasource-rest": "^3.7.0",
     "apollo-server-express": "^3.13.0",
     "axios": "^1.7.2",
