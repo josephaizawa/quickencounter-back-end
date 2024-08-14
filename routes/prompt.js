@@ -23,9 +23,9 @@ router.get("/", async (req, res) => {
 router.post("/encounter", async (req, res) => {
   const monsterNames = req.body;
 
-  const combinedMonsterNames = monsterNames.join(" ");
+  const combinedMonsterNames = monsterNames.join(", ");
 
-  const prompt = `Write a few sentence description about how a dungeons and dragons adventuring party first encounters a ${combinedMonsterNames}. Leave the descriptions of the environment out. Leave the descriptions of how they found the creature out.`;
+  const prompt = `Write a few sentence description about how a dungeons and dragons adventuring party first encounters ${combinedMonsterNames}. Leave the descriptions of the environment out. Leave the descriptions of how they found the creature out.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
